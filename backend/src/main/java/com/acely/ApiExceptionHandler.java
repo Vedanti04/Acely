@@ -1,0 +1,3 @@
+package com.acely;
+import java.util.*; import org.springframework.http.*; import org.springframework.web.bind.annotation.*;
+@RestControllerAdvice public class ApiExceptionHandler { @ExceptionHandler({IllegalArgumentException.class,NoSuchElementException.class,IllegalStateException.class}) public ResponseEntity<Map<String,String>> handle(RuntimeException e){HttpStatus status=e instanceof NoSuchElementException?HttpStatus.NOT_FOUND:HttpStatus.BAD_REQUEST;return ResponseEntity.status(status).body(Map.of("message",e.getMessage()));} @ExceptionHandler(Exception.class) public ResponseEntity<Map<String,String>> fallback(Exception e){return ResponseEntity.status(500).body(Map.of("message","Something went wrong while processing your request."));} }

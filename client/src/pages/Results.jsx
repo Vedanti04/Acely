@@ -1,0 +1,6 @@
+import { HiOutlineArrowRight, HiOutlineCheckCircle } from "react-icons/hi2";
+import Button from "../components/Button";
+import FeaturePage from "../components/FeaturePage";
+import StickyCard from "../components/StickyCard";
+function Results() { return <FeaturePage eyebrow="Quiz results" title="Quiz Completed 🎉" description="Here is a UI preview using sample data. Connect this view to your Spring Boot quiz API later."><div className="mt-8 grid gap-5 md:grid-cols-3"><StickyCard color="yellow"><strong className="text-5xl font-black">85%</strong><p className="mt-3 font-bold">Your score</p></StickyCard><StickyCard color="green"><strong className="text-3xl font-black">8 / 10</strong><p className="mt-3 font-bold">Correct answers</p></StickyCard><StickyCard color="purple"><strong className="text-3xl font-black">85%</strong><p className="mt-3 font-bold">Accuracy</p></StickyCard></div><StickyCard color="blue" className="mt-7"><HiOutlineCheckCircle className="size-7" /><h2 className="mt-4 text-xl font-black">AI feedback</h2><p className="mt-2 max-w-2xl text-sm leading-7">Great work on operating-system concepts. Review deadlock prevention and resource allocation once more, then take another short quiz.</p><Button to="/quiz" variant="secondary" className="mt-6">Try another quiz <HiOutlineArrowRight /></Button></StickyCard></FeaturePage>; }
+export default Results;

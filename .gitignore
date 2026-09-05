@@ -1,0 +1,6 @@
+.env
+backend/.env
+backend/target/
+backend/uploads/
+client/node_modules/
+client/dist/
