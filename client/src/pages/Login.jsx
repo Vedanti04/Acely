@@ -1,14 +1,176 @@
 import { useState } from "react";
-import { HiOutlineArrowRight, HiOutlineEnvelope, HiOutlineLockClosed } from "react-icons/hi2";
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../components/AuthLayout";
-import Button from "../components/Button";
+import { loginUser } from "../services/api";
 
-function Login() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
-  const submit = (event) => { event.preventDefault(); if (!form.email || !form.password) return setError("Enter your email address and password."); localStorage.setItem("studymind_token", "demo-session-token"); navigate("/dashboard"); };
-  return <AuthLayout title="Welcome back" subtitle="Sign in to continue your focused learning journey." footer={<><span>New to Acely?</span> <Link to="/register" className="font-semibold text-brand">Create an account</Link></>}><form onSubmit={submit} className="mt-7 space-y-4"><label className="block text-sm font-semibold text-slate-700">Email address<div className="relative mt-1.5"><HiOutlineEnvelope className="absolute left-3 top-3 size-5 text-slate-400" /><input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} type="email" placeholder="you@example.com" className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-3 outline-none ring-brand focus:ring-2" /></div></label><label className="block text-sm font-semibold text-slate-700">Password<div className="relative mt-1.5"><HiOutlineLockClosed className="absolute left-3 top-3 size-5 text-slate-400" /><input value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} type="password" placeholder="Enter your password" className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-3 outline-none ring-brand focus:ring-2" /></div></label>{error && <p className="text-sm text-rose-600">{error}</p>}<Button type="submit" className="w-full py-3">Sign in <HiOutlineArrowRight /></Button></form><p className="mt-5 text-center text-xs text-slate-400">Demo mode: any valid email and password will open the dashboard.</p></AuthLayout>;
+function getErrorMessage(error) {
+  if (!error?.response) {
+    return error?.message || "Unable to connect to the server.";
+  }
+
+  const data = error.response.data;
+
+  if (typeof data === "string") {
+    return data;
+  }
+
+  if (data?.message) {
+    return data.message;
+  }
+
+  if (data?.error) {
+    return data.error;
+  }
+
+  return `Login failed (${error.response.status}).`;
 }
-export default Login;
+
+export default function Login() {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (event) => {
+    setForm((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setError("");
+
+    if (!form.email.trim() || !form.password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await loginUser({
+        email: form.email.trim(),
+        password: form.password,
+      });
+
+      console.log("LOGIN RESPONSE:", response);
+
+      if (!response?.token) {
+        throw new Error("Login succeeded but no authentication token was returned.");
+      }
+
+      localStorage.setItem("acely_token", response.token);
+
+      localStorage.setItem(
+        "acely_user",
+        JSON.stringify({
+          userId: response.userId,
+          name: response.name,
+          email: response.email,
+          role: response.role,
+        })
+      );
+
+      localStorage.removeItem("acely_document_id");
+
+      // Go directly to the dashboard.
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FFFEF9] flex items-center justify-center px-6">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="size-4 rounded-full bg-[#FFDA45] border-2 border-[#151515]" />
+            <span className="text-3xl font-black tracking-tight">
+              Acely
+            </span>
+          </div>
+
+          <h1 className="text-3xl font-black">Welcome back</h1>
+
+          <p className="mt-2 text-[#686868]">
+            Log in to continue learning.
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-3xl border-[3px] border-[#151515] bg-white p-7 shadow-[6px_6px_0_#151515]"
+        >
+          {error && (
+            <div className="mb-5 rounded-xl border-2 border-red-400 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-5">
+            <div>
+              <label className="mb-2 block text-sm font-bold">
+                Email
+              </label>
+
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                autoComplete="email"
+                className="w-full rounded-xl border-2 border-[#151515] bg-[#FFFEF9] px-4 py-3 outline-none focus:ring-4 focus:ring-[#FFF3A6]"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-bold">
+                Password
+              </label>
+
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                className="w-full rounded-xl border-2 border-[#151515] bg-[#FFFEF9] px-4 py-3 outline-none focus:ring-4 focus:ring-[#FFF3A6]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl border-[3px] border-[#151515] bg-[#FFDA45] px-5 py-3 font-black transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Logging in..." : "Log in"}
+            </button>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-[#686868]">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="font-black text-[#151515] underline"
+            >
+              Create one
+            </Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
