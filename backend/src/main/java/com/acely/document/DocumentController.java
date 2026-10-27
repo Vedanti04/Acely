@@ -17,12 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/documents")
-@CrossOrigin(
-    origins = {
-        "http://localhost:5173",
-        "http://localhost:5174"
-    }
-)
 public class DocumentController {
 
     private final DocumentService service;
