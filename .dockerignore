@@ -1,0 +1,8 @@
+target/
+.git/
+node_modules/
+client/
+backups/
+*.sql
+.env
+*.log
