@@ -14,10 +14,6 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Run as non-root user
-RUN addgroup -S acely && adduser -S acely -G acely
-USER acely
-
 # Copy compiled JAR
 COPY --from=build /workspace/target/acely-backend-1.0.0.jar app.jar
 
@@ -25,6 +21,6 @@ COPY --from=build /workspace/target/acely-backend-1.0.0.jar app.jar
 EXPOSE 8080
 
 # Keep JVM heap within Render's 512MB RAM limit
-ENV JAVA_OPTS="-Xmx384m -Xms128m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_OPTS="-Xmx384m -Xms128m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]

@@ -66,8 +66,10 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                    // Authentication
+                    // Authentication and Health Check
                     .requestMatchers(
+                            "/",
+                            "/api/health",
                             "/api/auth/**"
                     ).permitAll()
 
